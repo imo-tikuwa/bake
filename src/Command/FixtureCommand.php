@@ -386,6 +386,18 @@ class FixtureCommand extends BakeCommand
                     case 'uuid':
                         $insert = Text::uuid();
                         break;
+                    case 'json':
+                        $insert = [
+                            [
+                                'latitude' => 35.658584,
+                                'longitude' => 139.7454316,
+                            ],
+                            [
+                                'latitude' => 35.7100069,
+                                'longitude' => 139.8108103,
+                            ],
+                        ];
+                        break;
                 }
                 $record[$field] = $insert;
             }
@@ -404,6 +416,7 @@ class FixtureCommand extends BakeCommand
     protected function _makeRecordString(array $records): string
     {
         $out = "[\n";
+        $indent = '                ';
         foreach ($records as $record) {
             $values = [];
             foreach ($record as $field => $value) {
@@ -411,10 +424,23 @@ class FixtureCommand extends BakeCommand
                     $value = $value->format('Y-m-d H:i:s');
                 }
                 $val = var_export($value, true);
-                if ($val === 'NULL') {
+                if (is_array($value)) {
+                    $val = preg_replace("/^(\s*)(.*)/m", "{$indent}$1$1$2", $val);
+                    $array = preg_split("/\r\n|\n|\r/", $val);
+                    $array = preg_replace([
+                        "/^\s*array\s\($/",
+                        "/\)(,)?$/",
+                        "/\s=>\s$/",
+                    ], [
+                        '',
+                        ']$1',
+                        ' => [',
+                    ], $array);
+                    $val = implode("\n", array_filter(['['] + $array));
+                } elseif ($val === 'NULL') {
                     $val = 'null';
                 }
-                $values[] = "                '$field' => $val";
+                $values[] = "{$indent}'$field' => $val";
             }
             $out .= "            [\n";
             $out .= implode(",\n", $values);
