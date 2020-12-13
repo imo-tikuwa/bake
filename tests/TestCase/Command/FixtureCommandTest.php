@@ -275,6 +275,23 @@ class FixtureCommandTest extends TestCase
     }
 
     /**
+     * Test that the value in the json column is indented correctly
+     *
+     * @return void
+     */
+    public function testGenerateFixtureJsonIndent()
+    {
+        $table = $this->getTableLocator()->get('Articles');
+        $table->getSchema()->addColumn('body', ['type' => 'json']);
+        $this->generatedFile = ROOT . 'tests/Fixture/ArticlesFixture.php';
+        $this->exec('bake fixture --connection test Articles');
+
+        $this->assertFileNotContains("                'body' => array(", $this->generatedFile);
+        $this->assertFileContains("                        'latitude' =>", $this->generatedFile);
+        $this->assertFileNotContains('  ),', $this->generatedFile);
+    }
+
+    /**
      * test generating files into plugins.
      *
      * @return void
