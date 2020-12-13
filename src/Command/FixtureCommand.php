@@ -432,7 +432,7 @@ class FixtureCommand extends BakeCommand
                         "/\)(,)?$/",
                         "/\s=>\s$/",
                     ], [
-                        null,
+                        '',
                         ']$1',
                         ' => [',
                     ], $array);
